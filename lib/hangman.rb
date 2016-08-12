@@ -1,7 +1,6 @@
+require "yaml"
 
 class Game
-
-  attr_accessor :board
 
   def initialize
     @word = secret_word
@@ -10,6 +9,36 @@ class Game
     @wrong_letters = []
     @win = false
   end
+
+  def intro
+    puts "\nWould you like to play HANGMAN?\nType 'Y' (yes), 'N' (no), or 'LOAD' to load a previously saved game."
+    answer = gets.chomp.downcase
+    if answer == "load"
+      puts "\nThis is where the last saved game left off."
+      load_game
+    elsif answer == "y"
+      puts "\nGreat! LET'S PLAY!"
+      play
+    elsif answer == "n"
+      abort("\nOk. See you later!\n")
+    else
+      puts "\nThat is not a valid answer."
+      intro
+    end
+  end
+
+  # ------------------- protected methods ----------------------
+  protected
+
+  def play
+    # loop for taking turns until win or lose.
+    until @win do 
+      turn
+    end
+  end
+
+  # ------------------- Private methods ----------------------
+  private
 
   def secret_word
     dict = File.open("../5desk.txt", "r")
@@ -27,35 +56,35 @@ class Game
     arr
   end
 
-  def intro
-    puts "\nWould you like to play HANGMAN?\nType 'Y' (yes) or 'N' (no)"
-    answer = gets.chomp.downcase
-    if answer == "y"
-      puts "\nGreat! LET'S PLAY!"
-    elsif answer == "n"
-      abort("\nOk. See you later!\n")
-    else
-      puts "\nThat is not a valid answer."
-      intro
-    end
-  end
-
-  def check_letter(letter)
-    if @all_letters.any? { |item| item == letter }
-      puts "\nThe letter '#{letter}' has already been chosen. Please try again." 
-    elsif @word.any? { |item| item == letter }
+  def check_letter(answer)
+    if answer == "SAVE"
+      save_game
+      puts "\nThe game has been saved."
+      resume_game?
+    elsif @all_letters.any? { |item| item == answer }
+      puts "\nThe letter '#{answer}' has already been chosen. Please try again." 
+    elsif @word.any? { |item| item == answer }
       @word.each_with_index { |item, index|
-        if item == letter
-          @board[index] = letter
+        if item == answer
+          @board[index] = answer
         end
       }
-      @all_letters << letter
+      @all_letters << answer
     else
-      puts "\nThe letter '#{letter}' is not in the secret word. Please try again."
-      @wrong_letters << letter
-      @all_letters << letter
+      puts "\nThe letter '#{answer}' is not in the secret word. Please try again."
+      @wrong_letters << answer
+      @all_letters << answer
     end
     win?
+  end
+
+  def resume_game?
+    puts "\nWould you like to continue playing this game?"
+    puts "Type 'Y' to continue, type 'N' to exit game."
+    input = gets.chomp.upcase
+    if input == "N"
+      abort("\nThe game has ended. Thanks for playing HANGMAN!\n")
+    end
   end
 
   def print_board
@@ -75,33 +104,26 @@ class Game
     end
   end
 
-  def turn
-    print_board
-    puts "\nPick a letter.\n"
-    letter = gets.chomp.upcase
-    check_letter(letter)
+  def save_game
+    Dir.mkdir('saved_games') unless Dir.exist? 'saved_games'
+    filename = 'saved_games/saved.yaml'
+    File.open(filename, 'w') { |file| file.puts YAML.dump(self) } 
   end
 
-  def play
-    intro
-    # loop for taking turns until win or lose.
-    until @win do 
-      turn
-    end
+  def load_game
+    saved_file = File.read('saved_games/saved.yaml')
+    saved_game = YAML.load(saved_file)
+    saved_game.play
+  end
+
+  def turn
+    print_board
+    puts "\nPick a letter, or type 'save' to save the game.\n"
+    answer = gets.chomp.upcase
+    check_letter(answer)
   end
 
 end
 
-a = Game.new
-a.play
-
-
-
-
-# player gets six guesses to figure out the secret word
-
-# during each turn 
-# display the underscores for each letter of the word length
-#  -- update the underscores with the correctly guessed letters
-# display the number of remaining guesses
-# display the incorectly guessed letters
+hangman = Game.new
+hangman.intro
