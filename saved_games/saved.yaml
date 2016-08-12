@@ -1,36 +1,30 @@
 --- !ruby/object:Game
 word:
-- E
-- V
+- H
 - A
 - N
+- D
+- B
+- A
 - G
-- E
-- L
-- I
-- S
-- M
 board:
 - _
-- _
 - A
 - N
 - _
 - _
+- A
 - _
-- _
-- S
-- M
 all_letters:
 - T
 - R
-- S
+- E
 - A
+- O
 - N
-- M
-- F
 wrong_letters:
 - T
 - R
-- F
+- E
+- O
 win: false

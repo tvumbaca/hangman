@@ -41,7 +41,7 @@ class Game
   private
 
   def secret_word
-    dict = File.open("../5desk.txt", "r")
+    dict = File.open("5desk.txt", "r")
     lines = dict.readlines
     word = valid_words(lines).sample.upcase.split("")
   end
